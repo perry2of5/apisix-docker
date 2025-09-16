@@ -1,0 +1,24 @@
+routes:
+  - uri: /api/supabase-config/v1
+    methods: [GET]
+    plugins:
+      mocking:
+        content_type: application/json
+        response_example: '{"supabase_url":"${{SUPABASE_URL}}", "supabase_publishable_key":"${{SUPABASE_PUBLISHABLE_INFO}}"}'
+        response_headers: {"access-control-allow-origin": "*"}
+
+  - uri: /api/somename/v1/always/there/**
+    id: dataplatform-source-service
+    plugins:
+      proxy-rewrite:
+        regex_uri:
+          - "^/api/somename/v1/(.*)"
+          - "/anything/$1"
+    upstream:
+      type: roundrobin
+      scheme: ${{HTTPBIN_SCHEME:=https}}
+      pass_host: node
+      nodes:
+        ${{HTTPBIN_SERVER}}:${{HTTPBIN_PORT}}: 1
+
+#END
